@@ -21,21 +21,26 @@ int main(void) {
 
     Cliente* cl = cliente(49, "Teste");
     salva(clientes,tabHash,cl);
+    
     Cliente* cl1 = cliente(3, "Algo");
+    salva(clientes, tabHash, cl1);
 
-    salva(clientes,tabHash,cl1);
-
+    Cliente* cl2 = cliente(7, "Sla");
+    salva(clientes, tabHash, cl2);
     
     rewind(clientes);
     rewind(tabHash);
 
-    imprimirHash(tabHash);
+    imprimiHash(tabHash);
     
-    imprime(le(clientes));
-    imprime(le(clientes));
+    imprimiClientes(clientes);
+
+    Cliente a;
+    printf("\n%d\n", busca(clientes,tabHash,7,&a));
 
     free(cl);
     free(cl1);
+    free(cl2);
 
     fclose(tabHash);
     fclose(clientes);
