@@ -36,7 +36,7 @@ int main(void) {
     imprimiClientes(clientes);
 
     Cliente a;
-    printf("\n%d\n", busca(clientes,tabHash,7,&a));
+    printf("Busca cliente cod 7: \n%d\n", busca(clientes,tabHash,7,&a));
 
     free(cl);
     free(cl1);

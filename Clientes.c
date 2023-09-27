@@ -3,21 +3,46 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-int tamHash;
+#define TAM_NOME 100
+
+int tamHash = 0;
 int final = 0;
 
+// Estrutura dados cliente + metadados
 typedef struct cliente
 {
     int cod;
-    char nome[100];
+    char nome[TAM_NOME];
     int prox;
     int status;
 } Cliente;
 
-int tamanhoDataCliente();
+// Retorna a posição do cod, segundo a função hash (cod mod n)
+int hash(int cod);
+// Imprime o metadado do Cliente
+void imprime(Cliente *cl);
+// Cria um metadado Cliente
+// Lembrar de usar free(cliente)
+Cliente *cliente(int cod, char *nome);
+// Guarda um Cliente cl no arquivo cliente e atualiza o arquivo tabH quando necessário
+// Imprime uma mensagem de Erro caso o cliente cl já exista (cod do cliente igual)
+void salva(FILE *clientes, FILE *tabH, Cliente *cl);
+// Escreve um cliente do arquivo clientes na posicao atual do cursor
 void escreveCliente(FILE *clientes, Cliente *cl);
+// Busca um Cliente (cod do cliente) no arquivo cliente, segundo a tabela hash no arquivo tabH e atribui a cl
+// Retorna 0 para cliente não encontrado, caso exista pelo menos 1 cliente na posição, 1 caso o cliente seja encontrado e 2 para não encontrado e posição não possui cliente
 int busca(FILE *clientes, FILE *tabH, int cod, Cliente* cl);
+// Le um cliente do arquivo clientes na posicao atual do cursor
+// Retorna 0 para erro e 1 para sucesso
 int le(FILE *clientes, Cliente * cl);
+// Inicializa o arquivo passado com -1 para todos os n elementos
+void hashInit(FILE *hash, int n);
+// Imprime o arquivo hash do arquivo
+void imprimiHash(FILE *in);
+// Imprime todos os clientes e seus metadados do arquivo
+void imprimiClientes(FILE *in);
+// Retorna o tamanho da estrutura Cliente em bytes
+int tamanhoMetaCliente();
 
 
 
@@ -25,7 +50,6 @@ int hash(int cod) {
     return cod%tamHash;
 }
 
-// Imprime Cliente
 void imprime(Cliente *cl) {
     printf("\n**********************************");
     printf("\nCódigo ");
@@ -39,7 +63,6 @@ void imprime(Cliente *cl) {
 
 }
 
-// Cria cliente. Lembrar de usar free(cl)
 Cliente *cliente(int cod, char *nome) {
     Cliente *cl = (Cliente *) malloc(sizeof(Cliente));
     //inicializa espaço de memória com ZEROS
@@ -52,7 +75,6 @@ Cliente *cliente(int cod, char *nome) {
     return cl;
 }
 
-// Salva funcionario no arquivo out, na posicao atual do cursor
 void salva(FILE *clientes, FILE *tabH, Cliente *cl) {
     int end = hash(cl->cod);
     Cliente temp;
@@ -60,7 +82,7 @@ void salva(FILE *clientes, FILE *tabH, Cliente *cl) {
     switch (busca(clientes, tabH, cl->cod, &temp))
     {
     case 0: // Percorre a lista até o fim e não acha o cliente
-        fseek(clientes, -tamanhoDataCliente(), SEEK_CUR);
+        fseek(clientes, -tamanhoMetaCliente(), SEEK_CUR);
         temp.prox = final;
         escreveCliente(clientes, &temp);
         break;
@@ -99,11 +121,11 @@ int busca(FILE *clientes, FILE *tabH, int cod, Cliente* cl) {
         return 2;
     }
     
-    fseek(clientes, endCl * tamanhoDataCliente(), SEEK_SET);
+    fseek(clientes, endCl * tamanhoMetaCliente(), SEEK_SET);
     le(clientes, cl);
 
     while(cl->prox != -1 && cl->cod != cod){
-        fseek(clientes, cl->prox * tamanhoDataCliente(), SEEK_SET);
+        fseek(clientes, cl->prox * tamanhoMetaCliente(), SEEK_SET);
         le(clientes, cl);
     }
     
@@ -111,15 +133,7 @@ int busca(FILE *clientes, FILE *tabH, int cod, Cliente* cl) {
 
     return 0;
 }
-/*
-void salvaHash(Cliente *cl, FILE *out) {
-    fwrite(&cl->cod, sizeof(int), 1, out);
-    //cl->nome ao invés de &func->nome, pois string já é ponteiro
-    fwrite(cl->nome, sizeof(char), sizeof(cl->nome), out);
-}*/
 
-// Le um cliente do arquivo clientes na posicao atual do cursor
-// Retorna 0 para erro e 1 para sucesso
 int le(FILE *clientes, Cliente *cl) {
     if (0 >= fread(&cl->cod, sizeof(int), 1, clientes)) {
 	free(cl);
@@ -131,12 +145,12 @@ int le(FILE *clientes, Cliente *cl) {
     return 1;
 }
 
-void hashInit(FILE *out, int n) {
+void hashInit(FILE *hash, int n) {
     int init = -1;
     tamHash = n;
     for (int i = 0; i < n; i++)
     {
-        fwrite(&init, sizeof(int), 1, out);
+        fwrite(&init, sizeof(int), 1, hash);
     }
     
 }
@@ -167,14 +181,7 @@ void imprimiClientes(FILE *in) {
     }
 }
 
-/*
-// Retorna tamanho do cliente em bytes
-int tamanhoCliente() {
-    return sizeof(int)  //cod
-            + sizeof(char) * 50; //nome
-}*/
-
-int tamanhoDataCliente() {
+int tamanhoMetaCliente() {
     return (sizeof(int) * 3)  //cod, prox, status
-            + sizeof(char) * 100; //nome
+            + sizeof(char) * TAM_NOME; //nome
 }
