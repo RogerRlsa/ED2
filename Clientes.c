@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <stdarg.h>
 
-#define TAM_NOME 100
+#define TAM_NOME_CLIENTE 100
+#define TAM_NOME_ARQ 50
 
 int tamHash = 0;
 int final = 0;
@@ -13,7 +14,7 @@ int endLivre = -1;
 typedef struct cliente
 {
     int cod;
-    char nome[TAM_NOME];
+    char nome[TAM_NOME_CLIENTE];
     int prox;
     int status;
 } Cliente;
@@ -39,13 +40,17 @@ int delete(FILE *clientes, FILE *tabH, int cod);
 // Retorna 0 para erro e 1 para sucesso
 int le(FILE *clientes, Cliente * cl);
 // Inicializa o arquivo passado com -1 para todos os n elementos
-void hashInit(FILE *hash, int n);
+void hashInit(FILE *hash, int n, int fim);
 // Imprime o arquivo hash do arquivo
 void imprimiHash(FILE *in);
 // Imprime todos os clientes e seus metadados do arquivo
 void imprimiClientes(FILE *in);
 // Retorna o tamanho da estrutura Cliente em bytes
 int tamanhoMetaCliente();
+// Le o arquivo de metadados e inicializa os arquivos necessários
+void leMetadadosHash(FILE* control, char* arq, FILE* hash, FILE* clientes);
+// Atualiza o final no arquivo de metadados
+void atualizaMetadados(FILE* meta);
 
 
 
@@ -143,7 +148,7 @@ int busca(FILE *clientes, FILE *tabH, int cod, Cliente* cl) {
         le(clientes, cl);
     }
     
-    if (cl->cod == cod) return 1; // Encontra o cliente
+    if (cl->cod == cod && cl->status == 0) return 1; // Encontra o cliente
     
     return 0; // Percorre a lista até o fim e não acha o cliente
 }
@@ -178,12 +183,18 @@ int le(FILE *clientes, Cliente *cl) {
     return 1;
 }
 
-void hashInit(FILE *hash, int n) {
+void hashInit(FILE *hash, int n, int fim) {
     int init = -1;
+
     tamHash = n;
-    for (int i = 0; i < n; i++)
+    final = fim;
+    
+    if (fim == 0)
     {
-        fwrite(&init, sizeof(int), 1, hash);
+        for (int i = 0; i < n; i++)
+        {
+            fwrite(&init, sizeof(int), 1, hash);
+        }
     }
     
 }
@@ -218,5 +229,41 @@ void imprimiClientes(FILE *in) {
 
 int tamanhoMetaCliente() {
     return (sizeof(int) * 3)  //cod, prox, status
-            + sizeof(char) * TAM_NOME; //nome
+            + sizeof(char) * TAM_NOME_CLIENTE; //nome
+}
+
+void leMetadadosHash(FILE* control, char* arq, FILE* hash, FILE* clientes) {
+    if ((control = fopen(arq, "r+b")) == NULL) {
+        printf("Erro ao abrir arquivo meta\n");
+        exit(1);
+    }
+
+    int tam, fim;
+    char arqHash[TAM_NOME_ARQ], arqClientes[TAM_NOME_ARQ];
+
+    fread(&tam, sizeof(int), 1, control);
+    fread(&fim, sizeof(int), 1, control);
+    fread(arqHash, sizeof(char), sizeof(arqHash), control);
+    fread(arqClientes, sizeof(char), sizeof(arqClientes), control);
+
+    //printf("%s", arqHash);
+    if ((hash = fopen(arqHash, "r+b")) == NULL) {
+        printf("Erro ao abrir arquivo hash\n");
+        exit(1);
+    }
+
+    if ((clientes = fopen(arqClientes, "r+b")) == NULL) {
+        printf("Erro ao abrir arquivo clientes\n");
+        exit(1);
+    }
+
+    hashInit(hash, tam, fim);
+
+}
+
+void atualizaMetadados(FILE* meta) {
+    printf("%d", final);
+    int fim = final;
+    fseek(meta, sizeof(int), SEEK_SET);
+    fwrite(&final, sizeof(int), 1, meta);
 }
