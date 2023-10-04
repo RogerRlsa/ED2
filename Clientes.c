@@ -47,8 +47,6 @@ void imprimiHash(FILE *in);
 void imprimiClientes(FILE *in);
 // Retorna o tamanho da estrutura Cliente em bytes
 int tamanhoMetaCliente();
-// Le o arquivo de metadados e inicializa os arquivos necessários
-void leMetadadosHash(FILE* control, char* arq, FILE* hash, FILE* clientes);
 // Atualiza o final no arquivo de metadados
 void atualizaMetadados(FILE* meta);
 
@@ -60,7 +58,7 @@ int hash(int cod) {
 
 void imprime(Cliente *cl) {
     printf("\n**********************************");
-    printf("\nCódigo ");
+    printf("\nCodigo ");
     printf("%d", cl->cod);
     printf("\nNome: ");
     printf("%s", cl->nome);
@@ -97,7 +95,7 @@ void salva(FILE *clientes, FILE *tabH, Cliente *cl) {
         }
         break;
     case 1: // Encontra o cliente
-        printf("ERRO, cliente já existe!!");
+        printf("ERRO, cliente ja existe!!");
         return ;
     case 2: // Lista vazia
         fseek(tabH, end * sizeof(int), SEEK_SET);
@@ -131,6 +129,7 @@ int busca(FILE *clientes, FILE *tabH, int cod, Cliente* cl) {
     fread(&endCl, sizeof(int), 1, tabH);
 
     if (endCl == -1){
+        printf("\nCliente nao encontrado, posicao vazia.\n");
         return 2; // Lista vazia 
     }
     
@@ -149,7 +148,9 @@ int busca(FILE *clientes, FILE *tabH, int cod, Cliente* cl) {
     }
     
     if (cl->cod == cod && cl->status == 0) return 1; // Encontra o cliente
-    
+    cl->cod = -1;
+    strcpy(cl->nome, "Not Found");
+    printf("\nCliente nao encontrado.\n");
     return 0; // Percorre a lista até o fim e não acha o cliente
 }
 
@@ -158,7 +159,7 @@ int delete(FILE *clientes, FILE *tabH, int cod) {
     switch (busca(clientes, tabH, cod, &cl))
     {
     case 0: // Percorre a lista até o fim e não acha o cliente
-        printf("ERRO, cliente não encontrado!!");
+        printf("ERRO, cliente nao encontrado!!");
         break;
     case 1: // Encontra o cliente
         cl.status = 1;
@@ -166,7 +167,7 @@ int delete(FILE *clientes, FILE *tabH, int cod) {
         escreveCliente(clientes, &cl);
         return 1;
     case 2: // Lista vazia 
-        printf("ERRO, cliente não encontrado!!");
+        printf("ERRO, cliente nao encontrado!!");
         break;
     }
     return 0;
@@ -232,38 +233,8 @@ int tamanhoMetaCliente() {
             + sizeof(char) * TAM_NOME_CLIENTE; //nome
 }
 
-void leMetadadosHash(FILE* control, char* arq, FILE* hash, FILE* clientes) {
-    if ((control = fopen(arq, "r+b")) == NULL) {
-        printf("Erro ao abrir arquivo meta\n");
-        exit(1);
-    }
-
-    int tam, fim;
-    char arqHash[TAM_NOME_ARQ], arqClientes[TAM_NOME_ARQ];
-
-    fread(&tam, sizeof(int), 1, control);
-    fread(&fim, sizeof(int), 1, control);
-    fread(arqHash, sizeof(char), sizeof(arqHash), control);
-    fread(arqClientes, sizeof(char), sizeof(arqClientes), control);
-
-    //printf("%s", arqHash);
-    if ((hash = fopen(arqHash, "r+b")) == NULL) {
-        printf("Erro ao abrir arquivo hash\n");
-        exit(1);
-    }
-
-    if ((clientes = fopen(arqClientes, "r+b")) == NULL) {
-        printf("Erro ao abrir arquivo clientes\n");
-        exit(1);
-    }
-
-    hashInit(hash, tam, fim);
-
-}
-
 void atualizaMetadados(FILE* meta) {
-    printf("%d", final);
-    int fim = final;
+    //printf("%d", final);
     fseek(meta, sizeof(int), SEEK_SET);
     fwrite(&final, sizeof(int), 1, meta);
 }
