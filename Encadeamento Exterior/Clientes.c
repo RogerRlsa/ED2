@@ -27,8 +27,9 @@ void imprime(Cliente *cl);
 // Lembrar de usar free(cliente)
 Cliente *cliente(int cod, char *nome);
 // Guarda um Cliente cl no arquivo cliente e atualiza o arquivo tabH quando necessário
-// Imprime uma mensagem de Erro caso o cliente cl já exista (cod do cliente igual)
-void salva(FILE *clientes, FILE *tabH, Cliente *cl);
+// Imprime uma mensagem de erro caso o cliente cl já exista (cod do cliente igual)
+// Retorna 0 para erro e 1 caso contrario
+int salva(FILE *clientes, FILE *tabH, Cliente *cl);
 // Escreve um cliente do arquivo clientes na posicao atual do cursor
 void escreveCliente(FILE *clientes, Cliente *cl);
 // Busca um Cliente (cod do cliente) no arquivo cliente, segundo a tabela hash no arquivo tabH e atribui a cl
@@ -81,7 +82,7 @@ Cliente *cliente(int cod, char *nome) {
     return cl;
 }
 
-void salva(FILE *clientes, FILE *tabH, Cliente *cl) {
+int salva(FILE *clientes, FILE *tabH, Cliente *cl) {
     int end = hash(cl->cod);
     Cliente temp;
     
@@ -95,8 +96,8 @@ void salva(FILE *clientes, FILE *tabH, Cliente *cl) {
         }
         break;
     case 1: // Encontra o cliente
-        printf("ERRO, cliente ja existe!!");
-        return ;
+        printf("\nERRO, ja existe um cliente com esse codigo!!\n");
+        return 0;
     case 2: // Lista vazia
         fseek(tabH, end * sizeof(int), SEEK_SET);
         fwrite(&final, sizeof(int), 1, tabH);
@@ -109,8 +110,13 @@ void salva(FILE *clientes, FILE *tabH, Cliente *cl) {
         final++;
     } else {
         fseek(clientes, endLivre * tamanhoMetaCliente(), SEEK_SET);
+        Cliente ant;
+        le(clientes, &ant);
+        cl->prox = ant.prox;
+        fseek(clientes, -tamanhoMetaCliente(), SEEK_CUR);
     }
     escreveCliente(clientes, cl);
+    return 1;
 }
 
 void escreveCliente(FILE *clientes, Cliente *cl) {
@@ -129,7 +135,7 @@ int busca(FILE *clientes, FILE *tabH, int cod, Cliente* cl) {
     fread(&endCl, sizeof(int), 1, tabH);
 
     if (endCl == -1){
-        printf("\nCliente nao encontrado, posicao vazia.\n");
+        //printf("\nCliente nao encontrado, posicao vazia.\n");
         return 2; // Lista vazia 
     }
     
@@ -142,15 +148,14 @@ int busca(FILE *clientes, FILE *tabH, int cod, Cliente* cl) {
     while(cl->prox != -1 && (cl->cod != cod || cl->status == 1)){
 
         if (endLivre == -1 && cl->status == 1) endLivre = endCl;
+        
         endCl = cl->prox;
         fseek(clientes, cl->prox * tamanhoMetaCliente(), SEEK_SET);
         le(clientes, cl);
     }
     
     if (cl->cod == cod && cl->status == 0) return 1; // Encontra o cliente
-    cl->cod = -1;
-    strcpy(cl->nome, "Not Found");
-    printf("\nCliente nao encontrado.\n");
+    
     return 0; // Percorre a lista até o fim e não acha o cliente
 }
 
@@ -159,7 +164,7 @@ int delete(FILE *clientes, FILE *tabH, int cod) {
     switch (busca(clientes, tabH, cod, &cl))
     {
     case 0: // Percorre a lista até o fim e não acha o cliente
-        printf("ERRO, cliente nao encontrado!!");
+        printf("\nERRO, cliente nao encontrado!!\n");
         break;
     case 1: // Encontra o cliente
         cl.status = 1;
@@ -167,7 +172,7 @@ int delete(FILE *clientes, FILE *tabH, int cod) {
         escreveCliente(clientes, &cl);
         return 1;
     case 2: // Lista vazia 
-        printf("ERRO, cliente nao encontrado!!");
+        printf("\nERRO, cliente nao encontrado!!\n");
         break;
     }
     return 0;

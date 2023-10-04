@@ -59,8 +59,7 @@ int main(void) {
             printf("\nInforme o codigo do cliente e o nome que deseja guardar: \n");
             scanf("%u %s", &cod, nome);
             cl = cliente(cod, nome);
-            salva(clientes, tabHash, cl);
-            printf("\nCliente salvo.\n");
+            if(salva(clientes, tabHash, cl)) printf("\nCliente salvo.\n");
             free(cl);
             break;
         case 2:
@@ -68,6 +67,8 @@ int main(void) {
             scanf("%u", &cod);
             if (busca(clientes, tabHash, cod, &clBusca) == 1) {
                 printf("\nDados do cliente:\nCodigo: %u.\nNome: %s.\n", clBusca.cod, clBusca.nome);
+            } else {
+                printf("\nCliente nao encontrado.\n");
             }
             break;
         case 3:
@@ -99,6 +100,7 @@ int main(void) {
     
     imprimiClientes(clientes);
 
+    printf("\nTotal de arquivos (independente do status): %d.\n", final);
     //Cliente a;
     //int cod = -1;
     //scanf(" %d", &cod);
