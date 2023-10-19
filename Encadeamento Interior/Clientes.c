@@ -154,24 +154,8 @@ void busca(FILE *clientes, int cod, int *end, int *a) {
     int saida = *end;
 
     Cliente cl;
-    fseek(clientes, (*end) * tamanhoMetaCliente(), SEEK_SET);       // Primeiro caso de insercao na posicao
-    le(clientes, &cl);
 
-    /*if (cl.status == 1) {
-        j = *end;
-    }
-    if (cl.cod == cod && cl.status == 0) {
-        *a = 1; // Cliente encontrado
-    } else {
-        if (*end == cl.prox) {
-            *a = 2; // Cliente não encontrado
-            *end = j;
-        } else {
-            *end = cl.prox;
-        }
-    }*/                                                               //
-
-    while (*a == 0)                                                 // Demais casos de insercao
+    while (*a == 0)
     {
         fseek(clientes, (*end) * tamanhoMetaCliente(), SEEK_SET);
         le(clientes, &cl);
@@ -189,7 +173,7 @@ void busca(FILE *clientes, int cod, int *end, int *a) {
                 *end = cl.prox;
             }
         }
-    }                                                                //
+    }
 }
 
 void deletar(FILE *clientes, int cod) {
