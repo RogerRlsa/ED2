@@ -37,7 +37,7 @@ int main(void) {
         int escolha = -1;
         unsigned int cod;
         char nome[TAM_NOME_CLIENTE];
-        printf("\nInforme a acao (0 -> encerrar loop, 1 -> inserir cliente, 2 -> buscar cliente, 3 -> deletar cliente, 4 -> imprimir tabela):\n");
+        printf("\nInforme a acao (0 -> encerrar loop, 1 -> inserir cliente, 2 -> buscar cliente, 3 -> deletar cliente, 4 -> imprimir tabela, 5 -> resetar hash):\n");
         scanf("%d", &escolha);
         getchar();
         switch (escolha)
@@ -73,9 +73,14 @@ int main(void) {
         case 4:
             imprimiClientes(clientes);
             break;
+        case 5:
+            hashInit(clientes,tamHash);
+            break;
+        default:
+            printf("Opcao invalida!!! Tente um numero no interval [0,5] valido.");
+            break;
         }
     } while (!sair);
-    printf("\n");
 
     fclose(control);
     fclose(clientes);

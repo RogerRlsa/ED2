@@ -91,6 +91,11 @@ void inserir(FILE *clientes, Cliente *cl) {
     if (a != 1) {
         if (end != -1) {
             j = end;
+
+            fseek(clientes, end * tamanhoMetaCliente(), SEEK_SET);
+            le(clientes, &clTemp);
+            //printf("clTemp %d end %d", clTemp.prox, end);
+            cl->prox = clTemp.prox;
         } else {
             i = 1;
             j = hash(cl->cod);
@@ -146,9 +151,28 @@ void busca(FILE *clientes, int cod, int *end, int *a) {
     *end = hash(cod);
     *a = 0;
     int j = -1;
-    while (*a == 0)
+    int saida = *end;
+
+    Cliente cl;
+    fseek(clientes, (*end) * tamanhoMetaCliente(), SEEK_SET);       // Primeiro caso de insercao na posicao
+    le(clientes, &cl);
+
+    if (cl.status == 1) {
+        j = *end;
+    }
+    if (cl.cod == cod && cl.status == 0) {
+        *a = 1; // Cliente encontrado
+    } else {
+        if (*end == cl.prox) {
+            *a = 2; // Cliente não encontrado
+            *end = j;
+        } else {
+            *end = cl.prox;
+        }
+    }                                                               //
+
+    while (*a == 0)                                                 // Demais casos de insercao
     {
-        Cliente cl;
         fseek(clientes, (*end) * tamanhoMetaCliente(), SEEK_SET);
         le(clientes, &cl);
 
@@ -158,14 +182,14 @@ void busca(FILE *clientes, int cod, int *end, int *a) {
         if (cl.cod == cod && cl.status == 0) {
             *a = 1; // Cliente encontrado
         } else {
-            if (*end == cl.prox) {
+            if (*end == saida) {
                 *a = 2; // Cliente não encontrado
                 *end = j;
             } else {
                 *end = cl.prox;
             }
         }
-    }
+    }                                                                //
 }
 
 void deletar(FILE *clientes, int cod) {
@@ -199,11 +223,11 @@ int le(FILE *clientes, Cliente *cl) {
 }
 
 void hashInit(FILE *clientes, int n) {
-    Cliente *init = cliente(-1,"z");
+    Cliente *init = cliente(-100,"---");
     init->status = 1;
 
     tamHash = n;
-
+    rewind(clientes);
     for (int i = 0; i < n; i++)
     {
         init->prox = i;
