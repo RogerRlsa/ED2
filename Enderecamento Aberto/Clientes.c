@@ -57,7 +57,7 @@ int tamanhoMetaCliente();
 
 
 int hash(int cod, int k) {
-    return cod%tamHash;
+    return ((cod % tamHash) + k) % tamHash;
 }
 
 inline void leCliente_i(FILE *clientes, Cliente *cl, int i) {
@@ -95,54 +95,17 @@ void inserir(FILE *clientes, Cliente *cl) {
     Cliente clTemp;
     busca(clientes, cl->cod, &end, &a);
 
-    if (a != 1) {
-        if (end != -1) {
-            j = end;
-
-            fseek(clientes, end * tamanhoMetaCliente(), SEEK_SET);
-            le(clientes, &clTemp);
-            //printf("clTemp %d end %d", clTemp.prox, end);
-            cl->prox = clTemp.prox;
-        } else {
-            i = 1;
-            j = hash(cl->cod);
-            
-            while (i <= tamHash)
-            {
-                
-                fseek(clientes, j * tamanhoMetaCliente(), SEEK_SET);
-                le(clientes, &clTemp);
-
-                if (clTemp.status == 0) {
-                    j = (j+1) % tamHash;
-                    i++;
-                } else {
-                    i = tamHash + 2;
-                }
-            }
-            
-            if (i==(tamHash+1)) {
-                printf("\nInsercao invalida!!! (Overflow)\n");
-                return;
-            }
-
-            fseek(clientes, hash(cl->cod) * tamanhoMetaCliente(), SEEK_SET);
-            le(clientes, &clTemp);
-
-            int temp = clTemp.prox;
-            clTemp.prox = j;
-            cl->prox = temp;
-
-            fseek(clientes, -tamanhoMetaCliente(), SEEK_CUR);
-            escreveCliente(clientes, &clTemp);
-        }
-
-        fseek(clientes, j * tamanhoMetaCliente(), SEEK_SET);
+    if (a == 2) {
+        fseek(clientes, end * tamanhoMetaCliente(), SEEK_SET);
         escreveCliente(clientes, cl);
 
         printf("\nInsercao realizada com sucesso!!!\n");
     } else {
-        printf("\nInsercao invalida!!! (Chave ja existe)\n");
+        if (a == 3){
+            printf("\nInsercao invalida!!! (Overflow)\n");
+        } else {
+            printf("\nInsercao invalida!!! (Chave ja existe)\n");
+        }
     }
 }
 
