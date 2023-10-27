@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include "Clientes.c"
+#include "clientes.c"
 
 FILE* abrirArq(char* nome) {
     FILE* arq;

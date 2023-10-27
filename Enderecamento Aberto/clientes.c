@@ -20,7 +20,7 @@ typedef struct cliente
 // Retorna a posição do cod, segundo a função hash (cod mod n)
 int hash(int cod, int k);
 // Le o i-ésimo cliente
-inline void leCliente_i(FILE *clientes, Cliente *cl, int i);
+void leCliente_i(FILE *clientes, Cliente *cl, int i);
 // Imprime o metadado do Cliente
 void imprime(Cliente *cl);
 // Cria um metadado Cliente
@@ -60,7 +60,7 @@ int hash(int cod, int k) {
     return ((cod % tamHash) + k) % tamHash;
 }
 
-inline void leCliente_i(FILE *clientes, Cliente *cl, int i) {
+void leCliente_i(FILE *clientes, Cliente *cl, int i) {
     fseek(clientes, i * tamanhoMetaCliente(), SEEK_SET);
     le(clientes, cl);
 }
@@ -118,20 +118,20 @@ void escreveCliente(FILE *clientes, Cliente *cl) {
 }
 
 void busca(FILE *clientes, int cod, int *end, int *a) {
-    a = 3;
+    *a = 3;
     Cliente cl;
 
     int k =0;
     while (k < tamHash) {
         *end = hash(cod, k);
 
-        leCliente_i(clientes, &cl, end);
+        leCliente_i(clientes, &cl, *end);
 
         if (cl.cod == cod) {
-            a = 1;
+            *a = 1;
             k = tamHash;
         } else if (cl.cod == -1) {
-            a = 2;
+            *a = 2;
             k = tamHash;
         } else {
             k++;

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "Clientes.c"
+#include "clientes.c"
 
 #define TAM_NOME_ARQ 50
 
