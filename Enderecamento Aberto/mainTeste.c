@@ -28,6 +28,9 @@ int main(void) {
 
     clientes = abrirArq(arqClientes);
 
+    printf("Informe o tipo da hash (0 - linear, 1 - quadratica, 2 - dupla):");
+    scanf("%d", &tipoHash);
+
     // Hash inicializada
     Cliente* cl;
     Cliente clBusca;

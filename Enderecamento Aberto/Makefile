@@ -9,4 +9,4 @@ metaCreate:
 	gcc -o metaCreate metaCreate.c
 
 exec metaCreate:
-	./metaCreate 7 tabela
+	./metaCreate 8 tabela
