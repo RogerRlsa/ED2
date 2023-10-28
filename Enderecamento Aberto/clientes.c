@@ -62,6 +62,8 @@ int tamanhoMetaCliente();
 
 
 int hash(int cod, int k) {
+    int hash_anterior;
+
     switch (tipoHash)
     {
     case H_LINEAR:
@@ -69,7 +71,7 @@ int hash(int cod, int k) {
 
     case H_QUAD:
         
-        int hash_anterior = cod % tamHash;
+        hash_anterior = cod % tamHash;
 
         for (int i = 1; i < k; i++) {
             hash_anterior = (hash_anterior + k) % tamHash;
