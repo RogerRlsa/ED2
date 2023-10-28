@@ -1,12 +1,17 @@
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <stdarg.h>
+# include <stdio.h>
+# include <string.h>
+# include <stdlib.h>
+# include <stdarg.h>
 
-#define TAM_NOME_CLIENTE 100
-#define TAM_NOME_ARQ 50
+# define TAM_NOME_CLIENTE 100
+# define TAM_NOME_ARQ 50
+
+# define H_LINEAR 0
+# define H_QUAD 1
+# define H_DISP_DUPLA 2
 
 int tamHash = 0;
+int tipoHash = 0;
 
 // Estrutura dados cliente + metadados
 typedef struct cliente
@@ -57,7 +62,21 @@ int tamanhoMetaCliente();
 
 
 int hash(int cod, int k) {
-    return ((cod % tamHash) + k) % tamHash;
+    switch (tipoHash)
+    {
+    case H_LINEAR:
+        return ((cod % tamHash) + k) % tamHash;
+
+    case H_QUAD:
+        return ((cod % tamHash) + k) % tamHash;
+    
+    case H_DISP_DUPLA:
+        return ((cod % tamHash) + k) % tamHash;
+    
+    default:
+        printf("\nFuncao hash nao encontrada!!!\n");
+        exit(1);
+    }
 }
 
 void leCliente_i(FILE *clientes, Cliente *cl, int i) {
