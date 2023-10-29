@@ -59,7 +59,8 @@ int main(void) {
             printf("\nInforme o codigo do cliente que deseja buscar: \n");
             scanf("%u", &cod);
             int end, a;
-            busca(clientes, cod, &end, &a);
+            int colisoes;
+            busca(clientes, cod, &end, &a, &colisoes);
             if (a == 1) {
                 fseek(clientes, end * tamanhoMetaCliente(), SEEK_SET);
                 le(clientes, &clBusca);

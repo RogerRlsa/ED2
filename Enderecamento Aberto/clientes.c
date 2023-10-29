@@ -13,6 +13,9 @@
 int tamHash = 0;
 int tipoHash = 0;
 
+int qtdDeClientes = 0;
+int qtdDeColisoes = 0;
+
 // Estrutura dados cliente + metadados
 typedef struct cliente
 {
@@ -39,7 +42,7 @@ void inserir(FILE *clientes, Cliente *cl);
 void escreveCliente(FILE *clientes, Cliente *cl);
 // Busca um Cliente (cod do cliente) no arquivo cliente, segundo a tabela hash no arquivo tabH e atribui a cl
 // Retorna 0 para cliente não encontrado, caso exista pelo menos 1 cliente na posição, 1 caso o cliente seja encontrado e 2 para não encontrado e posição não possui cliente
-void busca(FILE *clientes, int cod, int *end, int *a);
+void busca(FILE *clientes, int cod, int *end, int *a, int *colisoes);
 // Deleta um CLiente, alterando seu cod para -1 (liberado)
 void deletar(FILE *clientes, int cod);
 // Le um cliente do arquivo clientes na posicao atual do cursor
@@ -55,6 +58,9 @@ void hashInit(FILE *clientes, int n);
 void imprimiClientes(FILE *in);
 // Retorna o tamanho da estrutura Cliente em bytes
 int tamanhoMetaCliente();
+
+// Retorna o fator de carga da hash ( quantidade de clientes / tamanho da Hash )
+float fatorDeCarga ();
 
 // Atualiza o final no arquivo de metadados
 //void atualizaMetadados(FILE* meta);
@@ -96,7 +102,7 @@ void leCliente_i(FILE *clientes, Cliente *cl, int i) {
 
 void imprime(Cliente *cl) {
     printf("\n**********************************");
-    printf("\nCodigo ");
+    printf("\nCodigo: ");
     printf("%d", cl->cod);
     printf("\nNome: ");
     printf("%s", cl->nome);
@@ -121,15 +127,20 @@ Cliente *cliente(int cod, char *nome) {
 
 void inserir(FILE *clientes, Cliente *cl) {
     int end, a, i, j;
+    int tempQtdDeColisoes = 0;
+
     Cliente clTemp;
-    busca(clientes, cl->cod, &end, &a);
+    busca(clientes, cl->cod, &end, &a, &tempQtdDeColisoes);
 
     if (a == 2) {
         fseek(clientes, end * tamanhoMetaCliente(), SEEK_SET);
         escreveCliente(clientes, cl);
 
-        printf("\nInsercao realizada com sucesso!!!\n");
+        //printf("\nInsercao realizada com sucesso!!!\n");
+        qtdDeClientes++;
+        qtdDeColisoes = tempQtdDeColisoes;
     } else {
+        qtdDeColisoes = -1;
         if (a == 3){
             printf("\nInsercao invalida!!! (Overflow)\n");
         } else {
@@ -146,42 +157,56 @@ void escreveCliente(FILE *clientes, Cliente *cl) {
     //fwrite(&cl->status, sizeof(int), 1, clientes);
 }
 
-void busca(FILE *clientes, int cod, int *end, int *a) {
-    *a = 3;
+void busca(FILE *clientes, int cod, int *end, int *a, int *colisoes) {
+    *a = 3; // chave não encontrada
     Cliente cl;
+    int endLivre = -1;
+    int c = 0;
 
-    int k =0;
+    int k = 0;
     while (k < tamHash) {
         *end = hash(cod, k);
 
         leCliente_i(clientes, &cl, *end);
 
         if (cl.cod == cod) {
-            *a = 1;
+            *a = 1; // chave encontrada
             k = tamHash;
         } else if (cl.cod == -1) {
-            *a = 2;
+            *a = 2; // espaço vazio
             k = tamHash;
         } else {
+            if (endLivre == -1 && cl.cod == -2) {
+                c = k;
+                *a = 2;
+                endLivre = *end;
+            }
             k++;
         } 
+    }
+
+    if(*a != 1 && endLivre != -1) {
+        *colisoes = c;
+        *end = endLivre;
     }
 }
 
 void deletar(FILE *clientes, int cod) {
     int end, a;
-    busca(clientes, cod, &end, &a);
+    int tempQtdColisoes = 0;
+    busca(clientes, cod, &end, &a, &tempQtdColisoes);
 
     if (a == 1) {
         Cliente cl;
         leCliente_i(clientes, &cl, end);
 
-        cl.cod = -1;
+        cl.cod = -2;
 
         fseek(clientes, -tamanhoMetaCliente(), SEEK_CUR);
         escreveCliente(clientes, &cl);
 
-        printf("\nExclusao realizada com sucesso!!!\n");
+        //printf("\nExclusao realizada com sucesso!!!\n");
+        qtdDeClientes--;
     } else {
         printf("\nExclusao invalida!!! (Chave nao encontrada)\n");
     }
@@ -245,6 +270,11 @@ int tamanhoMetaCliente() {
     return (sizeof(int))  //cod
             + sizeof(char) * TAM_NOME_CLIENTE; //nome
 }
+
+float fatorDeCarga () {
+    return qtdDeClientes / tamHash;
+}
+
 /*
 void atualizaMetadados(FILE* meta) {
     //printf("%d", final);
