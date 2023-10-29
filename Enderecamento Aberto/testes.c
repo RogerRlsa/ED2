@@ -53,8 +53,13 @@ int inserirRandom (FILE *tab, int n) {
 void deletarRandom (FILE *tab) {
     //printf("\n1\n");
     //printf(", %d", qtdClientesNaHash);
-    int aleatorio = rand() % (qtdClientesNaHash);
+    int aleatorio = rand() % (qtdClientesNaHash), i=0;
     //printf("\n2\n");
+    while (clientesNaHash[aleatorio] == -1 || i < 500) {
+        aleatorio = (rand() % qtdClientesNaHash); 
+        i++;
+    }
+
     deletar(tab, clientesNaHash[aleatorio]);
     //printf("\n3\n");
     clientesNaHash[aleatorio] = clientesNaHash[qtdClientesNaHash];
@@ -67,7 +72,7 @@ double buscarRandom (FILE *tab) {
     int aleatorio = (rand() % qtdClientesNaHash), i=0;
 
     
-    while (clientesNaHash[aleatorio] == -1 || i > 500) {
+    while (clientesNaHash[aleatorio] == -1 || i < 500) {
         aleatorio = (rand() % qtdClientesNaHash); 
         i++;
     }
@@ -85,10 +90,10 @@ int main(int argc, char const *argv[])
 {
     
     FILE *clientes = abrirArq("tabela.dat");
-    
+    srand(time(NULL));
     for (int t = 0; t<3; t++) {
         tipoHash = t;               // Inicia tipo da hash como t
-        int n = 1000;
+        int n = 100;                // Tamanho inicial da hash
         printf("\nTipo da Hash: %d.\n", t);
         for (int i=0; i<3; i++) {
             hashInit(clientes, n);      // Inicia a hash e altera seu tamanho
@@ -126,11 +131,17 @@ int main(int argc, char const *argv[])
                         {
                             colisoes += tempColisoes;
                             insersoes++;
+                        } else {
+                            k--;
                         }
                         
                     }
                 }
                 
+                double mediaColisoes = (double) colisoes / (double) insersoes;
+                
+                printf("\n\t\tMedia de colisoes (%d exemplos): %.lf.\n", insersoes, mediaColisoes);
+
                 double tempoGasto = 0.0;
                 double tempTempoGasto = 0.0;
                 int buscas = 0;
@@ -147,12 +158,10 @@ int main(int argc, char const *argv[])
                     
                 }
                 double mediaTempoGasto = tempoGasto / (double) buscas;
-                double mediaColisoes = (double) colisoes / (double) insersoes;
                 
-                printf("\n\t\tMedia de colisoes (%d exemplos): %.lf.\n", insersoes, mediaColisoes);
                 printf("\n\t\tTempo medio de CPU para busca (%d exemplos): %.10lf.\n", buscas, mediaTempoGasto);
             }
-            n += 2000;                  // Tamanho da hash + 2000
+            n *= 10;                  // Tamanho da hash * 10
             free(clientesNaHash);
         }
     }

@@ -86,14 +86,8 @@ int hash(int cod, int k) {
         return (hash_anterior + k) % tamHash;
     
     case H_DISP_DUPLA:
-
-        hash_anterior = cod % tamHash;
-
-        for (int i = 1; i < k; i++) {
-            hash_anterior = (hash_anterior + k) % tamHash;
-        }
-
-        return ((cod % tamHash) + ( k * ((hash_anterior + k) % tamHash))) % tamHash;
+        
+        return ((cod % tamHash) + ( k * ((cod) % tamHash*2))) % tamHash;
     
     default:
         printf("\nFuncao hash nao encontrada!!!\n");
