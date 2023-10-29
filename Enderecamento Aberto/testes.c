@@ -33,7 +33,16 @@ FILE* abrirArq(char* nome) {
 }
 
 int inserirRandom (FILE *tab, int n) {
-    int aleatorio = rand();
+    int aleatorio = rand(), i=0;
+    while (clientesNaHash[i] != -1 && clientesNaHash[i] < qtdClientesNaHash) {
+        if(clientesNaHash[i] == aleatorio) {
+            aleatorio = rand();
+            i=0;
+        }
+
+        i++;
+    }
+
     Cliente cl = {.cod = aleatorio, .nome = "nome"};
     inserir(tab, &cl);
 
@@ -48,77 +57,104 @@ void deletarRandom (FILE *tab) {
     //printf("\n2\n");
     deletar(tab, clientesNaHash[aleatorio]);
     //printf("\n3\n");
-    clientesNaHash[aleatorio] = -1;
+    clientesNaHash[aleatorio] = clientesNaHash[qtdClientesNaHash];
+    clientesNaHash[qtdClientesNaHash] = -1;
+    qtdClientesNaHash--;
     //if (aleatorio == qtdClientesNaHash) qtdClientesNaHash--;
 }
 
 double buscarRandom (FILE *tab) {
-    int aleatorio = rand() % qtdClientesNaHash;
+    int aleatorio = (rand() % qtdClientesNaHash), i=0;
+
+    
+    while (clientesNaHash[aleatorio] == -1 || i > 500) {
+        aleatorio = (rand() % qtdClientesNaHash); 
+        i++;
+    }
+
     int end, a, colisoes;
     
     clock_t comeco = clock();
-    busca(tab, aleatorio, &end, &a, &colisoes);
+    busca(tab, clientesNaHash[aleatorio], &end, &a, &colisoes);
     clock_t final = clock();
-
-    return (final-comeco) / CLOCKS_PER_SEC;
+    //printf("%d",a);
+    return (a==1) ? (double) (final-comeco) / (double) CLOCKS_PER_SEC : -1.0;
 }
 
 int main(int argc, char const *argv[])
 {
     
     FILE *clientes = abrirArq("tabela.dat");
-    int n = 10;
-
-    for (int i=0; i<3; i++) {
-        tipoHash = i;               // Inicia tipo da hash como i
-        n *= 10;                    // Tamanho da hash 10 vezes maior
-        hashInit(clientes, n);      // Inicia a hash e altera seu tamanho
-        clientesNaHash = (int*) malloc(n*sizeof(int));
-        initClienteNaHash(n);
-        
-        printf("\nHash de tamanho: %d.\n", n);
-
-        for(int j=0; j<3; j++) {
-            float cargaAprox = (j==0)? 0.7:(j==1)? 0.8:0.9;
-            printf("\n\tFator de carga aproximado: %f.\n", cargaAprox);
+    
+    for (int t = 0; t<3; t++) {
+        tipoHash = t;               // Inicia tipo da hash como t
+        int n = 1000;
+        printf("\nTipo da Hash: %d.\n", t);
+        for (int i=0; i<3; i++) {
+            hashInit(clientes, n);      // Inicia a hash e altera seu tamanho
+            clientesNaHash = (int*) malloc(n*sizeof(int));
+            qtdClientesNaHash=0;
+            initClienteNaHash(n);
+            //printf("\n%f\n", fatorDeCarga());
             
-            while (fatorDeCarga() < cargaAprox)
-            {
-                inserirRandom(clientes, n);
-            }
-            //printf("\n%d\n", qtdClientesNaHash);
-            //imprimiClientes(clientes);
-            int colisoes = 0, insersoes = 0;
-            
-            for (int k=0; k<1400; k++)
-            {
-                if (fatorDeCarga() >= cargaAprox) {
-                    
-                    deletarRandom(clientes);
-                    
-                }else {
-                    int tempColisoes= inserirRandom(clientes, n);
-                    if (tempColisoes != -1)
+            printf("\nHash de tamanho: %d.\n", n);
+
+            for(int j=0; j<3; j++) {
+                
+                float cargaAprox = (j==0)? 0.7:(j==1)? 0.8:0.9;
+                printf("\n\tFator de carga aproximado: %f.\n", cargaAprox);
+                
+                while (fatorDeCarga() < cargaAprox)
+                {
+                    inserirRandom(clientes, n);
+                    //printf("\n%f\n", fatorDeCarga());
+                }
+                //printf("\n%d\n", qtdClientesNaHash);
+                //imprimiClientes(clientes);
+                //printf("\n%f\n", fatorDeCarga());
+                int colisoes = 0, insersoes = 0;
+                //return 0;
+                for (int k=0; k<n/3; k++)
+                {
+                    if (fatorDeCarga() >= cargaAprox) {
+                        
+                        deletarRandom(clientes);
+                        
+                    }else {
+                        int tempColisoes= inserirRandom(clientes, n);
+                        if (tempColisoes != -1)
+                        {
+                            colisoes += tempColisoes;
+                            insersoes++;
+                        }
+                        
+                    }
+                }
+                
+                double tempoGasto = 0.0;
+                double tempTempoGasto = 0.0;
+                int buscas = 0;
+                for (int b = 0; b < n/2; b++)
+                {
+                    tempTempoGasto = buscarRandom(clientes);
+                    if (tempTempoGasto>0.0)
                     {
-                        colisoes += tempColisoes;
-                        insersoes++;
+                        tempoGasto += tempTempoGasto;
+                        buscas++;
+                    } else {
+                        b--;
                     }
                     
                 }
+                double mediaTempoGasto = tempoGasto / (double) buscas;
+                double mediaColisoes = (double) colisoes / (double) insersoes;
+                
+                printf("\n\t\tMedia de colisoes (%d exemplos): %.lf.\n", insersoes, mediaColisoes);
+                printf("\n\t\tTempo medio de CPU para busca (%d exemplos): %.10lf.\n", buscas, mediaTempoGasto);
             }
-            
-            double tempoGasto = 0.0;
-            for (int b = 0; b < n/2; b++)
-            {
-                tempoGasto += buscarRandom(clientes);
-            }
-            double mediaTempoGasto = tempoGasto / (n/2);
-            double mediaColisoes = colisoes / insersoes;
-            
-            printf("\n\t\tMedia de colisoes (%d exemplos): %lf.\n", insersoes, mediaColisoes);
-            printf("\n\t\tTempo medio de CPU para busca (%d exemplos): %lf.\n", (n/2), mediaTempoGasto);
+            n += 2000;                  // Tamanho da hash + 2000
+            free(clientesNaHash);
         }
-        free(clientesNaHash);
     }
     fclose(clientes);
 

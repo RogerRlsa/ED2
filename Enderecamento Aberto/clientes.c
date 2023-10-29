@@ -87,7 +87,13 @@ int hash(int cod, int k) {
     
     case H_DISP_DUPLA:
 
-        return ((cod % tamHash) + ( k * ((cod + (k * k)) % tamHash))) % tamHash;
+        hash_anterior = cod % tamHash;
+
+        for (int i = 1; i < k; i++) {
+            hash_anterior = (hash_anterior + k) % tamHash;
+        }
+
+        return ((cod % tamHash) + ( k * ((hash_anterior + k) % tamHash))) % tamHash;
     
     default:
         printf("\nFuncao hash nao encontrada!!!\n");
@@ -142,7 +148,8 @@ void inserir(FILE *clientes, Cliente *cl) {
     } else {
         qtdDeColisoes = -1;
         if (a == 3){
-            printf("\nInsercao invalida!!! (Overflow)\n");
+            //printf("\nInsercao invalida!!! (Overflow)\n");
+            
         } else {
             printf("\nInsercao invalida!!! (Chave ja existe)\n");
         }
@@ -174,6 +181,7 @@ void busca(FILE *clientes, int cod, int *end, int *a, int *colisoes) {
             k = tamHash;
         } else if (cl.cod == -1) {
             *a = 2; // espaço vazio
+            if (endLivre == -1) c = k;
             k = tamHash;
         } else {
             if (endLivre == -1 && cl.cod == -2) {
@@ -185,9 +193,9 @@ void busca(FILE *clientes, int cod, int *end, int *a, int *colisoes) {
         } 
     }
 
-    if(*a != 1 && endLivre != -1) {
+    if(*a != 1) {
         *colisoes = c;
-        *end = endLivre;
+        if (endLivre != -1) *end = endLivre;
     }
 }
 
@@ -208,7 +216,7 @@ void deletar(FILE *clientes, int cod) {
         //printf("\nExclusao realizada com sucesso!!!\n");
         qtdDeClientes--;
     } else {
-        printf("\nExclusao invalida!!! (Chave nao encontrada)\n");
+        //printf("\nExclusao invalida!!! (Chave nao encontrada)\n");
     }
 }
 
@@ -226,6 +234,9 @@ int le(FILE *clientes, Cliente *cl) {
 void hashInit(FILE *clientes, int n) {
     Cliente *init = cliente(-1,"---");
     //init->status = 1;
+
+    qtdDeClientes = 0;
+    qtdDeColisoes = 0;
 
     tamHash = n;
     rewind(clientes);
@@ -272,7 +283,8 @@ int tamanhoMetaCliente() {
 }
 
 float fatorDeCarga () {
-    return qtdDeClientes / tamHash;
+    //printf("\n%d\n", qtdDeClientes);
+    return (float) qtdDeClientes / (float) tamHash;
 }
 
 /*
