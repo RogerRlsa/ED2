@@ -1,7 +1,6 @@
 #include <stdio.h>
-#include "arvorePatricia.c"
+#include "arvorePat.c"
 
 int main(){
-
     return 0;
 }
