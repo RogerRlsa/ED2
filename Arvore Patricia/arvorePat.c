@@ -33,6 +33,9 @@ void busca(ArvPat* arv, int cod, int* a, int k, int* result);
 void insere(ArvPat* arv, int cod, int k);
 
 //
+void insereValida(ArvPat* arv, int cod);
+
+//
 void delete(ArvPat*, int cod);
 
 //
@@ -88,6 +91,9 @@ void insere(ArvPat* arv, int cod, int k) {
     int a, r = LAMBDA;
     busca(arv, cod, &a, k, &r);
 
+    // determinar no y' descendente do no r -> resultado da busca
+    // caso r for folha, então y' = r
+    
     
 }
 
