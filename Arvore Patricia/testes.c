@@ -32,6 +32,7 @@ ArvPat* arvTeste() {
 }
 
 int main(){
+
     ArvPat* arv = arvTeste();
     int a;
     ArvPat* r;
@@ -40,6 +41,9 @@ int main(){
     if (arv != NULL)    printf("\nRotulo do resultado de busca: %d\n", r->rotulo);
 
     liberaArvPat(arv);
+
+    printf("%d", (tamanhoChave(0b0100011)));
+
 
     return 0;
 }
