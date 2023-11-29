@@ -33,10 +33,11 @@ ArvPat* arvTeste() {
 
 int main(){
     ArvPat* arv = arvTeste();
-    int a, r =-1;
+    int a;
+    ArvPat* r;
     busca(arv, 0b110, &a, 2, &r);
 
-    if (arv != NULL)    printf("\nRotulo do resultado de busca: %d\n", r);
+    if (arv != NULL)    printf("\nRotulo do resultado de busca: %d\n", r->rotulo);
 
     liberaArvPat(arv);
 
