@@ -13,9 +13,18 @@
 //-------------------------------------------
 
 //
+typedef struct rotulo
+{
+    int r;
+    short tamanho;
+} Rotulo;
+
+
+//
 typedef struct arvorePat
 {
-    int rotulo;
+    struct arvorePat* pai;    
+    Rotulo chave;
     struct arvorePat* direita;
     struct arvorePat* esquerda;
     
@@ -32,14 +41,14 @@ void liberaArvPat(ArvPat* arv);
 // retorna 1 se r for no folha e 0 caso contrário 
 int eFolha(ArvPat* r);
 
-// W.I.P
-// TODO: limite = tamanho da chave
-int tamanhoMaiorPrefComum(int cod, int chave);
+// 
+// 
+short tamanhoMaiorPrefComum(Rotulo* cod, Rotulo* chave);
 
 // retorna o tamanho da chave
-int tamanhoChave(int chave);
+short tamanhoChave(Rotulo* chave);
 
-// W.I.P
+// 
 void selecDescendente(ArvPat** no);
 
 // arv: ponteiro para a arvore patricia
@@ -52,13 +61,16 @@ void selecDescendente(ArvPat** no);
 void busca(ArvPat* arv, int cod, int* a, int k, ArvPat** result);
 
 // 
-void insere(ArvPat* arv, int cod, int k);
+ArvPat* insere(ArvPat* arv, int cod, short k);
+
+// 
+ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l);
+
+//
+void determinarNoDeInsercao(ArvPat* y, short l, ArvPat** noDeInsercao);
 
 // W.I.P
-void insereValida(ArvPat* arv, int cod);
-
-// W.I.P
-void delete(ArvPat* arv, int cod);
+ArvPat* delete(ArvPat* arv, int cod, short k);
 
 // W.I.P
 // busca em largura???
@@ -67,17 +79,21 @@ void imprimeArvPat(ArvPat* arv);
 //-------------------------------------------
 
 ArvPat* arvPat() {
-    ArvPat* new = (ArvPat*) malloc(sizeof(ArvPat));
-    new->rotulo = LAMBDA;
-    new->direita = NULL;
-    new->esquerda = NULL;
-    return new;
+    ArvPat* no = (ArvPat*) malloc(sizeof(ArvPat));
+    no->chave.r = LAMBDA;
+    no->chave.tamanho = LAMBDA;
+    no->pai = NULL;
+    no->direita = NULL;
+    no->esquerda = NULL;
+    return no;
 }
 
 void liberaArvPat(ArvPat* arv) {
     
-    if (arv->esquerda != NULL)  liberaArvPat(arv->esquerda);
-    if (arv->direita != NULL)   liberaArvPat(arv->direita);
+    if (arv->esquerda != NULL) {
+        liberaArvPat(arv->esquerda);
+        liberaArvPat(arv->direita);
+    }
 
     //printf("\nLiberado: %d\n", arv->rotulo);
 
@@ -88,19 +104,19 @@ int eFolha(ArvPat* r) {
     return (r->esquerda == NULL)? 1 : 0;
 }
 
-int tamanhoMaiorPrefComum(int cod, int chave) {
-    int tam = 0;
+short tamanhoMaiorPrefComum(Rotulo* cod, Rotulo* chave) {
+    short tam = 0;
     int mask = 1;
 
-    int tamCod = tamanhoChave(cod);
-    int tamChave = tamanhoChave(chave);
+    short tamCod = tamanhoChave(cod);
+    short tamChave = tamanhoChave(chave);
 
     int limite = (tamCod < tamChave)? tamCod : tamChave;
 
-    if (cod == chave) return limite;
+    if (cod->r == chave->r) return limite;
 
     // xor -> 0 para bits com valores iguais entre cod e chave
-    int comparacao = (cod ^ chave);
+    int comparacao = (cod->r ^ chave->r);
 
     if ((comparacao & mask) == 0)
     {
@@ -120,29 +136,28 @@ int tamanhoMaiorPrefComum(int cod, int chave) {
     return tam;
 }
 
-int tamanhoChave(int chave) {
-
-    int tam = 1;
-    int mask = 1 <<((sizeof(chave)*8)-1);
-    int limite = (sizeof(chave)*8);
-
-    for (int i = 0; i < limite-1; i++)
-    {
-        if ((chave & mask) != 0) {
-            tam = limite - i;
-            break;
-        }
-        mask = mask >> 1;
-    }
-    return tam;
+short tamanhoChave(Rotulo* chave) {
+    return chave->tamanho;
 }
 
 void selecDescendente(ArvPat **no)
 {
+    ArvPat* folha = *no;
+    while (folha->esquerda != NULL)
+    {
+        *no = folha->esquerda;
+        folha = folha->esquerda;
+    }
 }
 
 void busca(ArvPat* arv, int cod, int* a, int k, ArvPat** result) {
-    int mask = 1<<((arv->rotulo)-1);
+    if (arv->chave.r == LAMBDA) {
+        //printf("\nNão ha nenhum no na arvore!!!\n");
+        *result = NULL;
+        return;
+    }
+
+    int mask = 1<<((arv->chave.r)-1);
 
     //printf("\nAlcancado: %d\n", arv->rotulo);
 
@@ -151,7 +166,7 @@ void busca(ArvPat* arv, int cod, int* a, int k, ArvPat** result) {
         *a = 1;
         *result = arv;
     }
-    else if (k < arv->rotulo)
+    else if (k < arv->chave.r)
     {
         *a = 2;
     }
@@ -167,40 +182,142 @@ void busca(ArvPat* arv, int cod, int* a, int k, ArvPat** result) {
     }
 }
 
-void insere(ArvPat* arv, int cod, int k) {
-    
+ArvPat* insere(ArvPat* arv, int cod, short k) {
     // a -> 1 se busca chegou em nó folha e 2 caso contrário
-    // r -> nó alcançado pela busca
+    // no -> nó alcançado pela busca
     int a;
-    ArvPat* r;
+    ArvPat* no;
+    Rotulo in = {cod, k};
 
-    busca(arv, cod, &a, k, &r);
+    busca(arv, cod, &a, k, &no);
+    if (no==NULL) {
+        no = arvPat();
+        no->chave.r = cod;
+        no->chave.tamanho = k;
 
-    if (!eFolha(r)) {
-        // Selecionar y descendente do no r -> resultado da busca
-        selecDescendente(&r);
-        // caso r for folha, então y = r
+        return no;
+    }
+
+    if (!eFolha(no)) {
+        // Selecionar descendente do no -> resultado da busca
+        selecDescendente(&no);
+        // caso no for folha, então retorna o próprio nó
     }
     
-    // l -> tamanho do maior prefixo comum entre cod e a chave de y
-    int l = tamanhoMaiorPrefComum(cod, r->rotulo);
+    // l -> tamanho do maior prefixo comum entre cod e a chave de no
+
+    short l = tamanhoMaiorPrefComum(&in, &(no->chave));
 
     // c -> tamanho da chave do no
-    int c = tamanhoChave(r->rotulo);
+    short c = tamanhoChave(&(no->chave));
 
     // inserção inválida
     if (l == k || l == c) {
         printf("\nA chave é inválida, insira uma chave válida!!!\n");
-        return ;
+        return arv;
     }
     
-    insereValida(arv, cod);
+    return insereValida(arv, no, &in, l);
 }
 
-void insereValida(ArvPat *arv, int cod)
-{
+ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l) {
+
+    ArvPat* noDeInsercao = NULL;
+    // Determinar nó de inserção
+    determinarNoDeInsercao(y, l, &noDeInsercao);
+
+    // Criar dois nós
+    ArvPat* v = arvPat();
+    v->chave.r = l+1;
+    v->chave.tamanho = LAMBDA;
+
+    ArvPat* w = arvPat();
+    w->chave = *cod;
+    w->pai = v;
+
+    // Inserindo nó v na árvore
+    v->pai = noDeInsercao->pai;
+    if (v->pai!=NULL)
+    {
+        int rot = v->pai->direita->chave.r;
+        if ((1<<(rot-1)) & y->chave.r) {
+            v->pai->esquerda = v;
+        } else {
+            v->pai->direita = v;
+        }
+    }
+    noDeInsercao->pai = v;
+
+    // Determinar qual filho é w, esquerdo ou direito
+    if (w->chave.r & (1<<l))
+    {
+        v->esquerda = w;
+        v->direita = noDeInsercao;
+    } else {
+        v->esquerda = noDeInsercao;
+        v->direita = w;
+    }
+    return (v->pai==NULL)? v: arv;
 }
 
-void imprimeArvPat(ArvPat *arv)
-{
+void determinarNoDeInsercao(ArvPat* y, short l, ArvPat** noDeInsercao) {
+    if (y->pai == NULL) {
+        // y é folha, se y for a raiz há somente y na árvore, entao o nó de inserção é y 
+    } else if (y->pai->chave.r <= l+1) {
+        // Se o rotulo do pai de y for menor ou igual que o tamanho do maior prefixo comum + 1, então y é o nó de inserção
+    } else {
+        y = y->pai;
+        // Caso contrário, o no de inserção será o nó mais proximo da raiz, tal que seu rótulo seja maior l+1
+        while (y->pai!=NULL && y->pai->chave.r > l+1)
+        {
+            y = y->pai;
+        }
+    }
+    *noDeInsercao = y;
+}
+
+ArvPat* delete(ArvPat* arv, int cod, short k) {
+    int a;
+    ArvPat* result;
+    busca(arv, cod, &a, k, &result);
+    if (result->chave.r != cod) return arv;
+    
+    if (result->pai!=NULL)
+    {
+        int rot = result->pai->direita->chave.r;
+        if (rot == result->chave.r) {
+            // resultado é filho direito
+            result->pai->esquerda->pai = result->pai->pai;
+            // W.I.P
+            result->pai->direita == NULL;
+        } else {
+            // W.I.P
+            result->pai->esquerda == NULL;
+        }
+        free(result);
+        return arv;
+    } else {
+        free(result);
+        return NULL;
+    }
+}
+
+void imprimeArvPat(ArvPat *arv) {
+    if (arv->chave.r==-1) {
+        printf("Arvore vazia");
+        return;
+    }
+    printf("\n");
+    imprimeArvPatRecursiva(arv);
+    printf("\n");
+}
+
+void imprimeArvPatRecursiva(ArvPat *arv) {
+    printf("%d<", arv->chave.r);
+    if (arv->esquerda != NULL)
+    {
+        imprimeArvPatRecursiva(arv->esquerda);
+        imprimeArvPatRecursiva(arv->direita);
+        printf(">");
+    }
 }
