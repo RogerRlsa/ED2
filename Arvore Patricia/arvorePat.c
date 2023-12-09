@@ -201,6 +201,11 @@ ArvPat* insere(ArvPat* arv, int cod, short k) {
 
         return no;
     }
+    //printf("%d, %d",no->chave.r, cod);
+    if (a == 1 && no->chave.r == cod) {
+        printf("\nChave ja existe na arvore!!!\n");
+        return arv;
+    }
 
     if (!eFolha(no)) {
         // Selecionar descendente do no -> resultado da busca
@@ -217,7 +222,7 @@ ArvPat* insere(ArvPat* arv, int cod, short k) {
 
     // inserção inválida
     if (l == k || l == c) {
-        printf("\nA chave é inválida, insira uma chave válida!!!\n");
+        printf("\nA chave e invalida, insira uma chave valida!!!\n");
         return arv;
     }
     
@@ -229,7 +234,7 @@ ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l) {
     ArvPat* noDeInsercao = NULL;
     // Determinar nó de inserção
     determinarNoDeInsercao(y, l, &noDeInsercao);
-
+    printf("\n%d, %d, %d\n", cod->r, noDeInsercao->chave.r, y->chave.r);
     // Criar dois nós
     ArvPat* v = arvPat();
     v->chave.r = l+1;
@@ -248,9 +253,11 @@ ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l) {
         if ((1<<(rot-1)) & y->chave.r) {
             // y é filho direito, portanto v é filho esquerdo
             v->pai->esquerda = v;
+            printf("HERE 1R");
         } else {
             // y é filho esquerdo, portanto v é filho direito
             v->pai->direita = v;
+            printf("HERE 1L");
         }
     }
     noDeInsercao->pai = v;
@@ -261,10 +268,12 @@ ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l) {
         // w é filho direito de v
         v->direita = w;
         v->esquerda = noDeInsercao;
+        //printf("HERE 1R");
     } else {
         // w é filho esquerdo de v
         v->direita = noDeInsercao;
         v->esquerda = w;
+        //("HERE 1L");
     }
     return (v->pai==NULL)? v: arv;
 }
@@ -292,7 +301,7 @@ ArvPat* delete(ArvPat* arv, int cod, short k) {
 
     busca(arv, cod, &a, k, &result);
     if (result->chave.r != cod || a == 2) {
-        printf("\nChave não encontrada!!!\n");
+        printf("\nChave nao encontrada!!!\n");
         return arv;
     }
 
@@ -307,9 +316,11 @@ ArvPat* delete(ArvPat* arv, int cod, short k) {
                 int rotPai = result->pai->pai->direita->chave.r;
                 if (cod & (1<<(rotPai-1))) {
                     // filho direito
+                    //printf("HERE 1R");
                     result->pai->pai->direita = result->pai->esquerda;
                 } else {
                     // filho esquerdo
+                    //printf("HERE 1L");
                     result->pai->pai->esquerda = result->pai->esquerda;
                 }
             } else {
@@ -324,9 +335,11 @@ ArvPat* delete(ArvPat* arv, int cod, short k) {
                 if (cod & (1<<(rotPai-1))) {
                     // filho direito
                     result->pai->pai->direita = result->pai->direita;
+                    //printf("HERE 2R");
                 } else {
                     // filho esquerdo
-                    result->pai->pai->esquerda = result->pai->direita;
+                    //printf("HERE 2L");
+                    result->pai->pai->direita = result->pai->direita;
                 }
             } else {
                 retorno = result->pai->direita;

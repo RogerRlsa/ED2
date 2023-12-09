@@ -52,22 +52,27 @@ int main(){
 
     ArvPat* T = arvPat();
 
-    imprimeArvPat(T);
+    //imprimeArvPat(T);
 
     T = insere(T, 0b1111, 4);
-    //imprimeArvPat(T);
-    T = insere(T, 0b1101, 4);
-    //imprimeArvPat(T);
+    imprimeArvPat(T);
+    //T = insere(T, 0b1110, 4);
+    imprimeArvPat(T);
     //printf("\n %d \n", T->esquerda->chave.r);
-    T = insere(T, 0b1011, 4);
-    //imprimeArvPat(T);
+    //T = insere(T, 0b1001, 4);
+    imprimeArvPat(T);
     T = insere(T, 0b0111, 4);
+    imprimeArvPat(T);
+    T = insere(T, 0b0011, 4);
+    imprimeArvPat(T);
+    T = insere(T, 0b1011, 4);
 
     imprimeArvPat(T);
-    T = delete(T, 7, 4);
+    //printf("\n %d \n", T->direita->direita->esquerda->pai->chave.r);
+    //T = delete(T, 11, 4);
     //printf(tamanhoMaiorPrefComum(T->, &(no->chave)));
-    imprimeArvPat(T);
-    //printf("%d", T->direita->direita->pai->chave.r);
+    //imprimeArvPat(T);
+    
 
 
     //liberaArvPat(arv);
