@@ -288,6 +288,7 @@ void determinarNoDeInsercao(ArvPat* y, short l, ArvPat** noDeInsercao) {
 ArvPat* delete(ArvPat* arv, int cod, short k) {
     int a;
     ArvPat* result;
+    ArvPat* retorno = arv;
 
     busca(arv, cod, &a, k, &result);
     if (result->chave.r != cod || a == 2) {
@@ -302,8 +303,7 @@ ArvPat* delete(ArvPat* arv, int cod, short k) {
         if (rot == result->chave.r) {
             // resultado é filho direito
             result->pai->esquerda->pai = result->pai->pai;
-            if (result->pai->pai != NULL)
-            {
+            if (result->pai->pai != NULL) {
                 int rotPai = result->pai->pai->direita->chave.r;
                 if (cod & (1<<(rotPai-1))) {
                     // filho direito
@@ -312,8 +312,9 @@ ArvPat* delete(ArvPat* arv, int cod, short k) {
                     // filho esquerdo
                     result->pai->pai->esquerda = result->pai->esquerda;
                 }
-            }
-                        
+            } else {
+                retorno = result->pai->esquerda;
+            } 
         } else {
             // resultado é filho esquerdo
             result->pai->direita->pai = result->pai->pai;
@@ -327,11 +328,13 @@ ArvPat* delete(ArvPat* arv, int cod, short k) {
                     // filho esquerdo
                     result->pai->pai->esquerda = result->pai->direita;
                 }
-            }
+            } else {
+                retorno = result->pai->direita;
+            } 
         }
         free(result->pai);
         free(result);
-        return arv;
+        return retorno;
     } else { // Resultado da busca é a raiz
         free(result);
         return arvPat();
