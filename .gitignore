@@ -2,4 +2,6 @@
 *.o
 *.dat
 metaCreate
+output
 main
+testes
