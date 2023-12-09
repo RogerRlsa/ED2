@@ -51,6 +51,7 @@ int main(void)
                             int tam = 0;
                             do
                             {
+                                printf("\nTamanho invalido!!!\n");
                                 scanf("%d %d", &chave, &tam);
                             } while (tam>32 || tam<=0);
                             
@@ -68,6 +69,7 @@ int main(void)
                             int tam = 0;
                             do
                             {
+                                printf("\nTamanho invalido!!!\n");
                                 scanf("%d %d", &chave, &tam);
                             } while (tam>32 || tam<=0);
                             
@@ -93,6 +95,7 @@ int main(void)
                             int tam = 0;
                             do
                             {
+                                printf("\nTamanho invalido!!!\n");
                                 scanf("%d %d", &chave, &tam);
                             } while (tam>32 || tam<=0);
                             
