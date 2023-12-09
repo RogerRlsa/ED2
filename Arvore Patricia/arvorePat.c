@@ -201,6 +201,7 @@ ArvPat* insere(ArvPat* arv, int cod, short k) {
         no->chave.r = cod;
         no->chave.tamanho = k;
 
+        printf("\nChave inserida com sucesso!!!\n");
         return no;
     }
     //printf("%d, %d",no->chave.r, cod);
@@ -271,6 +272,7 @@ ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l) {
         v->direita = w;
         v->esquerda = noDeInsercao;
     }
+    printf("\nChave inserida com sucesso!!!\n");
     return retorno;
 }
 
@@ -347,6 +349,7 @@ ArvPat* delete(ArvPat* arv, int cod, short k) {
     }
     free(result->pai);
     free(result);
+    printf("\nChave deletada com sucesso!!!\n");
     return retorno;
 }
 

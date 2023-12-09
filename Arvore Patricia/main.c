@@ -28,7 +28,8 @@ int main(void)
         case 1:
             // Cria a arvore, caso não exista
             ARVORE_EXISTE(  arvExiste,
-                            arv = arvPat();,
+                            arv = arvPat();
+                            printf("\nA arvore foi criada!!!\n");,
                             printf("\nA arvore ja existe!!!\n");
                             )
             break;
