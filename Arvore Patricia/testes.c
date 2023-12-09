@@ -63,8 +63,11 @@ int main(){
     //imprimeArvPat(T);
     T = insere(T, 0b0111, 4);
 
+    imprimeArvPat(T);
+    T = delete(T, 15, 4);
     //printf(tamanhoMaiorPrefComum(T->, &(no->chave)));
     imprimeArvPat(T);
+    printf("%d", T->direita->direita->esquerda->chave.r);
 
 
     //liberaArvPat(arv);

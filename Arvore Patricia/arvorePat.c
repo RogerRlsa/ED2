@@ -246,8 +246,10 @@ ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l) {
     {
         int rot = v->pai->direita->chave.r;
         if ((1<<(rot-1)) & y->chave.r) {
+            // y é filho direito, portanto v é filho esquerdo
             v->pai->esquerda = v;
         } else {
+            // y é filho esquerdo, portanto v é filho direito
             v->pai->direita = v;
         }
     }
@@ -256,9 +258,11 @@ ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l) {
     // Determinar qual filho é w, esquerdo ou direito
     if (w->chave.r & (1<<l))
     {
-        v->esquerda = w;
-        v->direita = noDeInsercao;
+        // w é filho direito de v
+        v->direita = w;
+        v->esquerda = noDeInsercao;
     } else {
+        // w é filho esquerdo de v
         v->direita = noDeInsercao;
         v->esquerda = w;
     }
@@ -284,26 +288,53 @@ void determinarNoDeInsercao(ArvPat* y, short l, ArvPat** noDeInsercao) {
 ArvPat* delete(ArvPat* arv, int cod, short k) {
     int a;
     ArvPat* result;
+
     busca(arv, cod, &a, k, &result);
-    if (result->chave.r != cod) return arv;
-    
-    if (result->pai!=NULL)
+    if (result->chave.r != cod || a == 2) {
+        printf("\nChave não encontrada!!!\n");
+        return arv;
+    }
+
+    // Caso a chave exista na árvore
+    if (result->pai!=NULL) // Resultado da busca não é a raiz
     {
         int rot = result->pai->direita->chave.r;
         if (rot == result->chave.r) {
             // resultado é filho direito
             result->pai->esquerda->pai = result->pai->pai;
-            // W.I.P
-            result->pai->direita = NULL;
+            if (result->pai->pai != NULL)
+            {
+                int rotPai = result->pai->pai->direita->chave.r;
+                if (cod & (1<<(rotPai-1))) {
+                    // filho direito
+                    result->pai->pai->direita = result->pai->esquerda;
+                } else {
+                    // filho esquerdo
+                    result->pai->pai->esquerda = result->pai->esquerda;
+                }
+            }
+                        
         } else {
-            // W.I.P
-            result->pai->esquerda = NULL;
+            // resultado é filho esquerdo
+            result->pai->direita->pai = result->pai->pai;
+            if (result->pai->pai != NULL)
+            {
+                int rotPai = result->pai->pai->direita->chave.r;
+                if (cod & (1<<(rotPai-1))) {
+                    // filho direito
+                    result->pai->pai->direita = result->pai->direita;
+                } else {
+                    // filho esquerdo
+                    result->pai->pai->esquerda = result->pai->direita;
+                }
+            }
         }
+        free(result->pai);
         free(result);
         return arv;
-    } else {
+    } else { // Resultado da busca é a raiz
         free(result);
-        return NULL;
+        return arvPat();
     }
 }
 
