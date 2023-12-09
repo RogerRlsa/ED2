@@ -72,9 +72,14 @@ void determinarNoDeInsercao(ArvPat* y, short l, ArvPat** noDeInsercao);
 // W.I.P
 ArvPat* delete(ArvPat* arv, int cod, short k);
 
-// W.I.P
-// busca em largura???
+// Imprime a árvore patricia
+// Notação:
+// raiz < filho esquerdo, filho direito >
+// asteristíco (*) após o rotulo do nó indica que este é folha
 void imprimeArvPat(ArvPat* arv);
+
+//
+void imprimeArvPatRecursiva(ArvPat *arv);
 
 //-------------------------------------------
 
@@ -153,7 +158,7 @@ void selecDescendente(ArvPat **no)
 void busca(ArvPat* arv, int cod, int* a, int k, ArvPat** result) {
     if (arv->chave.r == LAMBDA) {
         //printf("\nNão ha nenhum no na arvore!!!\n");
-        *result = NULL;
+        *result = arv;
         return;
     }
 
@@ -190,8 +195,7 @@ ArvPat* insere(ArvPat* arv, int cod, short k) {
     Rotulo in = {cod, k};
 
     busca(arv, cod, &a, k, &no);
-    if (no==NULL) {
-        no = arvPat();
+    if (no->chave.r==LAMBDA) {
         no->chave.r = cod;
         no->chave.tamanho = k;
 
@@ -229,6 +233,7 @@ ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l) {
     // Criar dois nós
     ArvPat* v = arvPat();
     v->chave.r = l+1;
+    //printf("--- %d ", v->chave.r);
     v->chave.tamanho = LAMBDA;
 
     ArvPat* w = arvPat();
@@ -254,8 +259,8 @@ ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l) {
         v->esquerda = w;
         v->direita = noDeInsercao;
     } else {
-        v->esquerda = noDeInsercao;
-        v->direita = w;
+        v->direita = noDeInsercao;
+        v->esquerda = w;
     }
     return (v->pai==NULL)? v: arv;
 }
@@ -289,10 +294,10 @@ ArvPat* delete(ArvPat* arv, int cod, short k) {
             // resultado é filho direito
             result->pai->esquerda->pai = result->pai->pai;
             // W.I.P
-            result->pai->direita == NULL;
+            result->pai->direita = NULL;
         } else {
             // W.I.P
-            result->pai->esquerda == NULL;
+            result->pai->esquerda = NULL;
         }
         free(result);
         return arv;
@@ -304,7 +309,7 @@ ArvPat* delete(ArvPat* arv, int cod, short k) {
 
 void imprimeArvPat(ArvPat *arv) {
     if (arv->chave.r==-1) {
-        printf("Arvore vazia");
+        printf("\nArvore vazia\n");
         return;
     }
     printf("\n");
@@ -313,11 +318,15 @@ void imprimeArvPat(ArvPat *arv) {
 }
 
 void imprimeArvPatRecursiva(ArvPat *arv) {
-    printf("%d<", arv->chave.r);
+    printf("%d", arv->chave.r);
     if (arv->esquerda != NULL)
     {
+        printf(" < ");
         imprimeArvPatRecursiva(arv->esquerda);
+        if (arv->esquerda->esquerda==NULL) printf("*");
+        printf(", ");
         imprimeArvPatRecursiva(arv->direita);
-        printf(">");
+        if (arv->direita->esquerda==NULL) printf("*");
+        printf(" > ");
     }
 }

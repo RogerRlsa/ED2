@@ -33,29 +33,41 @@ ArvPat* arvTeste() {
 
 int main(){
 
-    ArvPat* arv = arvTeste();
-    int a;
-    ArvPat* r;
-    busca(arv, 0b110, &a, 3, &r);
+    //ArvPat* arv = arvTeste();
+    //int a;
+    //ArvPat* r;
+    //busca(arv, 0b110, &a, 3, &r);
 
     //if (arv != NULL)    printf("\nRotulo do resultado de busca: %d\n", r->chave.r);
 
     
 
-    Rotulo rot = {0b0100011, 8};
-    Rotulo rot2 = {0b0100111, 7};
+    //Rotulo rot = {0b0100011, 8};
+    //Rotulo rot2 = {0b0100111, 7};
     //printf("%d", (tamanhoMaiorPrefComum(&rot,&rot2)));
 
-    ArvPat* raiz123 = (arv->direita);
-    selecDescendente(&raiz123);
+    //ArvPat* raiz123 = (arv->direita);
+    //selecDescendente(&raiz123);
     //printf("%d", raiz123->chave);
 
     ArvPat* T = arvPat();
 
-    imprimeArvPat(arv);
-    //insere(T,0b1,1);
+    imprimeArvPat(T);
 
-    liberaArvPat(arv);
+    T = insere(T, 0b1111, 4);
+    //imprimeArvPat(T);
+    T = insere(T, 0b1101, 4);
+    //imprimeArvPat(T);
+    //printf("\n %d \n", T->esquerda->chave.r);
+    T = insere(T, 0b1011, 4);
+    //imprimeArvPat(T);
+    T = insere(T, 0b0111, 4);
+
+    //printf(tamanhoMaiorPrefComum(T->, &(no->chave)));
+    imprimeArvPat(T);
+
+
+    //liberaArvPat(arv);
     liberaArvPat(T);
     return 0;
 }
