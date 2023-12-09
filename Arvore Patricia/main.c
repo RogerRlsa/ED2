@@ -51,8 +51,8 @@ int main(void)
                             int tam = 0;
                             do
                             {
-                                printf("\nTamanho invalido!!!\n");
                                 scanf("%d %d", &chave, &tam);
+                                if (tam>32 || tam<=0) printf("\nTamanho invalido!!!\n");
                             } while (tam>32 || tam<=0);
                             
                             arv = insere(arv, chave, tam);
@@ -69,8 +69,8 @@ int main(void)
                             int tam = 0;
                             do
                             {
-                                printf("\nTamanho invalido!!!\n");
                                 scanf("%d %d", &chave, &tam);
+                                if (tam>32 || tam<=0) printf("\nTamanho invalido!!!\n");
                             } while (tam>32 || tam<=0);
                             
                             int a = 0;
@@ -95,8 +95,8 @@ int main(void)
                             int tam = 0;
                             do
                             {
-                                printf("\nTamanho invalido!!!\n");
                                 scanf("%d %d", &chave, &tam);
+                                if (tam>32 || tam<=0) printf("\nTamanho invalido!!!\n");
                             } while (tam>32 || tam<=0);
                             
                             delete(arv, chave, tam);
@@ -118,6 +118,6 @@ int main(void)
         }
     }
 
-    free(arv);
+    liberaArvPat(arv);
     return 0;
 }
