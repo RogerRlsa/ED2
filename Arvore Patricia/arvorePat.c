@@ -42,7 +42,6 @@ void liberaArvPat(ArvPat* arv);
 int eFolha(ArvPat* r);
 
 // 
-// 
 short tamanhoMaiorPrefComum(Rotulo* cod, Rotulo* chave);
 
 // retorna o tamanho da chave
@@ -69,7 +68,10 @@ ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l);
 //
 void determinarNoDeInsercao(ArvPat* y, short l, ArvPat** noDeInsercao);
 
-// W.I.P
+// 
+int noDireito(ArvPat* no, int caminho);
+
+// 
 ArvPat* delete(ArvPat* arv, int cod, short k);
 
 // Imprime a árvore patricia
@@ -231,51 +233,45 @@ ArvPat* insere(ArvPat* arv, int cod, short k) {
 
 ArvPat* insereValida(ArvPat* arv, ArvPat* y, Rotulo* cod, short l) {
 
+    ArvPat* retorno = arv;
     ArvPat* noDeInsercao = NULL;
     // Determinar nó de inserção
     determinarNoDeInsercao(y, l, &noDeInsercao);
-    printf("\n%d, %d, %d\n", cod->r, noDeInsercao->chave.r, y->chave.r);
+    
     // Criar dois nós
     ArvPat* v = arvPat();
-    v->chave.r = l+1;
-    //printf("--- %d ", v->chave.r);
+    v->chave.r = (l + 1);
     v->chave.tamanho = LAMBDA;
+    v->pai = noDeInsercao->pai;
+    
+    if (noDeInsercao->pai != NULL)
+    {
+        if (noDireito(noDeInsercao, y->chave.r))
+        {
+            noDeInsercao->pai->direita = v;
+        } else {
+            noDeInsercao->pai->esquerda = v;
+        }
+    } else {
+        retorno = v;
+    }
+    noDeInsercao->pai = v;
 
     ArvPat* w = arvPat();
     w->chave = *cod;
     w->pai = v;
 
-    // Inserindo nó v na árvore
-    v->pai = noDeInsercao->pai;
-    if (v->pai!=NULL)
+    // "Inserindo" filhos do nó v na árvore
+    if ((cod->r & (1<<l))== 0)
     {
-        int rot = v->pai->direita->chave.r;
-        if ((1<<(rot-1)) & y->chave.r) {
-            // y é filho direito, portanto v é filho esquerdo
-            v->pai->esquerda = v;
-            printf("HERE 1R");
-        } else {
-            // y é filho esquerdo, portanto v é filho direito
-            v->pai->direita = v;
-            printf("HERE 1L");
-        }
-    }
-    noDeInsercao->pai = v;
-
-    // Determinar qual filho é w, esquerdo ou direito
-    if (w->chave.r & (1<<l))
+        v->esquerda = w;
+        v->direita = noDeInsercao;
+    } else
     {
-        // w é filho direito de v
         v->direita = w;
         v->esquerda = noDeInsercao;
-        //printf("HERE 1R");
-    } else {
-        // w é filho esquerdo de v
-        v->direita = noDeInsercao;
-        v->esquerda = w;
-        //("HERE 1L");
     }
-    return (v->pai==NULL)? v: arv;
+    return retorno;
 }
 
 void determinarNoDeInsercao(ArvPat* y, short l, ArvPat** noDeInsercao) {
@@ -294,6 +290,15 @@ void determinarNoDeInsercao(ArvPat* y, short l, ArvPat** noDeInsercao) {
     *noDeInsercao = y;
 }
 
+int noDireito(ArvPat* no, int caminho) {
+
+    ArvPat* pai = no->pai;
+
+    int mask = 1 << ((pai->chave.r)-1);
+
+    return ((caminho & mask) == 0)? 0 : 1;
+}
+
 ArvPat* delete(ArvPat* arv, int cod, short k) {
     int a;
     ArvPat* result;
@@ -304,54 +309,45 @@ ArvPat* delete(ArvPat* arv, int cod, short k) {
         printf("\nChave nao encontrada!!!\n");
         return arv;
     }
-
+    
     // Caso a chave exista na árvore
-    if (result->pai!=NULL) // Resultado da busca não é a raiz
-    {
-        int rot = result->pai->direita->chave.r;
-        if (rot == result->chave.r) {
-            // resultado é filho direito
+    if (result->pai == NULL) {
+        // Resultado é raiz
+        free(result);
+        return arvPat();
+    } else {
+        if (noDireito(result, cod))
+        {
             result->pai->esquerda->pai = result->pai->pai;
-            if (result->pai->pai != NULL) {
-                int rotPai = result->pai->pai->direita->chave.r;
-                if (cod & (1<<(rotPai-1))) {
-                    // filho direito
-                    //printf("HERE 1R");
+            if (result->pai->pai != NULL)
+            {
+                if (noDireito(result->pai, cod))
+                {
                     result->pai->pai->direita = result->pai->esquerda;
                 } else {
-                    // filho esquerdo
-                    //printf("HERE 1L");
                     result->pai->pai->esquerda = result->pai->esquerda;
                 }
             } else {
                 retorno = result->pai->esquerda;
-            } 
+            }
         } else {
-            // resultado é filho esquerdo
             result->pai->direita->pai = result->pai->pai;
             if (result->pai->pai != NULL)
             {
-                int rotPai = result->pai->pai->direita->chave.r;
-                if (cod & (1<<(rotPai-1))) {
-                    // filho direito
+                if (noDireito(result->pai, cod))
+                {
                     result->pai->pai->direita = result->pai->direita;
-                    //printf("HERE 2R");
                 } else {
-                    // filho esquerdo
-                    //printf("HERE 2L");
-                    result->pai->pai->direita = result->pai->direita;
+                    result->pai->pai->esquerda = result->pai->direita;
                 }
             } else {
                 retorno = result->pai->direita;
-            } 
+            }
         }
-        free(result->pai);
-        free(result);
-        return retorno;
-    } else { // Resultado da busca é a raiz
-        free(result);
-        return arvPat();
     }
+    free(result->pai);
+    free(result);
+    return retorno;
 }
 
 void imprimeArvPat(ArvPat *arv) {
@@ -361,6 +357,7 @@ void imprimeArvPat(ArvPat *arv) {
     }
     printf("\n");
     imprimeArvPatRecursiva(arv);
+    if (arv->esquerda == NULL) printf("*");
     printf("\n");
 }
 

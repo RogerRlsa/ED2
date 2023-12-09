@@ -52,14 +52,14 @@ int main(){
 
     ArvPat* T = arvPat();
 
-    //imprimeArvPat(T);
+    imprimeArvPat(T);
 
     T = insere(T, 0b1111, 4);
     imprimeArvPat(T);
-    //T = insere(T, 0b1110, 4);
+    T = insere(T, 0b1110, 4);
     imprimeArvPat(T);
-    //printf("\n %d \n", T->esquerda->chave.r);
-    //T = insere(T, 0b1001, 4);
+    printf("\n %d \n", T->esquerda->chave.r);
+    T = insere(T, 0b1001, 4);
     imprimeArvPat(T);
     T = insere(T, 0b0111, 4);
     imprimeArvPat(T);
